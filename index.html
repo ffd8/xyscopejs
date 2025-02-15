@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>XYscope.js</title>
+	<link rel="stylesheet" href="includes/css/styles.css">
+	<link rel="stylesheet" href="includes/js/highlight/docco.css">
+	<script src="includes/js/highlight/highlight.pack.js"></script>
+	<style type="text/css">
+		html { scroll-behavior: smooth; }
+		body{
+			background:#fff;
+		}
+		#spacer{
+			position: relative;
+			height: 100vh;
+		}
+		canvas{
+			position:fixed;
+			top:0;
+			left:0;
+			z-index:-1;
+			width:100vw;
+			height:100vh;
+			margin:0;
+		}
+		code{
+			border:1px solid #ddd;
+			border-radius:3px;
+			padding:3px;
+		}
+		#tube{
+			position: fixed;
+			z-index:12;
+			top:0;
+			left:0;
+			width:100vw;
+			height:100vh;
+			background-image: url(includes/images/crt-blend-green.png);
+			background-size: 100vw 100vh;
+			mix-blend-mode:multiply !important;
+			pointer-events: none;
+		}
+		#scope{
+			z-index:-1 !important;
+			mix-blend-mode:exclusion ;
+			pointer-events: none !important;
+			opacity:.75;
+		}
+		.scope-holder-fullscreen, .scope-gui{
+			background:none !important;
+		}
+		h3, h4{
+			scroll-margin-top: 78px;
+		}
+		#volume-holder{
+			position:sticky;
+			top:26px;
+			margin-top:-26px;
+			right:0;
+			text-align:right;
+			z-index:25;
+		}
+		#volume{
+			-webkit-appearance: none;  /* Override default CSS styles */
+			appearance: none;
+			height: 8px;
+			background: #9faa9f;
+			border-radius:3px;
+		}
+		#volume::-webkit-slider-thumb {
+			-webkit-appearance: none; /* Override default look */
+			appearance: none;
+			width: 16px; /* Set a specific slider handle width */
+			height: 16px; /* Slider handle height */
+			background: #1fbb1f; /* Green background */
+			box-shadow: 0px 0px 8px #1fbb1f;
+			cursor: pointer; /* Cursor on hover */
+			border-radius:15px;
+		}
+
+		#volume::-moz-range-thumb {
+			-webkit-appearance: none; /* Override default look */
+			appearance: none;
+			width: 16px; /* Set a specific slider handle width */
+			height: 16px; /* Slider handle height */
+			background: #1fbb1f; /* Green background */
+			box-shadow: 0px 0px 8px #1fbb1f;
+			cursor: pointer; /* Cursor on hover */
+			border-radius:15px;
+		}
+	</style>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+	<script type="text/javascript" src="xyscope.js"></script>
+</head>
+<body>
+	<script src="includes/js/stmd.js"></script>
+	<script src="includes/js/render.js"></script>
+
+	<div id="volume-holder"></div>
+	<div id="md">
+		XYscope.js – Documentation<br><br>
+		» <a href="https://teddavis.org/xyscopejs">https://teddavis.org/xyscopejs</a>
+	</div>
+
+	<div id="spacer"></div>
+	<div id="tube"></div>
+
+	<script type="text/javascript">
+		function windowResized() {
+			resizeCanvas(windowWidth, windowHeight);
+		}
+
+		// XYscope.js BG v.1
+		// cc teddavis.org 2025
+
+		let bgSettings = {
+			per: 0,
+			int: .1,
+			hue: 290,
+			mouse: {screenX:0, screenY:0, clientX:0, clientY:0},
+			mode: 0,
+		}
+		var myP = 0, myI = .1, myH = 290
+		var m = {screenX:0, screenY:0, clientX:0, clientY:0}
+
+		function setup() {
+			// createCanvas(512, 512);
+			pixelDensity(.4)
+			xy = new XYscope(this)
+			xy.canvas()
+			xy.textAlign(CENTER, CENTER);
+			xy.volume(0)
+
+			xy2 = new XYscope(this, xy.outXY)
+			xy2.volume(0)
+
+			let volumeHolder = select('#volume-holder')
+			volume = createSlider(0, 1, 0, .01).id('volume').parent(volumeHolder).input(()=>{
+				xy.volume(volume.value())
+				xy2.volume(volume.value())
+			})
+			rectMode(CENTER)
+
+			var scope = document.getElementById('scope')
+			scope.style.mixBlendMode = 'exclusion'
+
+			window.addEventListener('scroll', (e)=>{
+				let spacer = document.getElementById('spacer')
+				xy.seq.bpm(60 + window.scrollY/100)
+				// console.log(xy.seq.bpm())
+
+				if(window.scrollY > spacer.offsetTop - 1){
+					bgSettings.per = 2
+					bgSettings.int = .3
+					bgSettings.hue = 120
+					scope.style.mixBlendMode = 'normal'
+					xy.seq.pattern('A3;B3;G3;G2;D3 A2;B2;G2;G1;D2') // 3rd
+				}else{
+					bgSettings.per = 0
+					bgSettings.int = .1
+					bgSettings.hue = 290
+					scope.style.mixBlendMode = 'exclusion'
+					xy.seq.pattern('4A3 4B3 4G3-- 4G2-- 2D3 2r 4A2 4B2 4G2-- 4G1-- 2D2 2r') // 3rd
+				}
+			})
+
+			xy.seq.pattern('4A3 4B3 4G3-- 4G2-- 2D3 2r 4A2 4B2 4G2-- 4G1-- 2D2 2r') // 3rd
+			xy.seq.start()
+
+		}
+
+		function draw() {
+			clear()
+			xy.drawXY({opacity:0, gui:0, grid:0, p:bgSettings.per, intensity:bgSettings.int, hue:bgSettings.hue})
+			xy.clearWaves()
+
+			push()
+			translate(width/2,height/2)
+			txt = 'XYscope.js'
+			xy.textSize(width/txt.length/1)
+			xy.text(txt, 0, 0)
+			xy.buildWaves()
+			pop()
+
+			xy2.clearWaves()
+			xy2.freq(24.9)
+			// bgSettings.mode = 4
+			switch(bgSettings.mode%5){
+			case 0:
+			xy2.circle(width/2, height/2, dist(width/2, height/2, bgSettings.mouse.clientX - width/4, bgSettings.mouse.clientY)/2)
+				break
+			case 1:
+			xy2.line(width/2, height/2, bgSettings.mouse.clientX , bgSettings.mouse.clientY)
+				break
+			case 2:
+				xy2.rect(width/2, height/2, 0, 150)
+				break
+			case 3:
+				xy2.freq(50.1)
+				xy2.line(width / 2, height / 4, width / 2 + 0, height / 4 + 250)
+				break
+			case 4:
+				let d = dist(width/2, height/2, bgSettings.mouse.clientX, bgSettings.mouse.clientY)
+				xy2.circle(width/2 - random(-d, d), height/2- random(-d, d), 1)
+				break
+			}
+			xy2.buildWaves()
+		}
+
+		function mousePressed() {
+			xy.resume()
+			bgSettings.mode++
+		}
+
+		document.addEventListener("mousemove", logKey);
+		
+		function logKey(e) {
+			bgSettings.mouse = e
+		}
+	</script>
+</body>
+</html>

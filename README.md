@@ -593,9 +593,14 @@ There's a special notation for adjusting duration, octave, repeats, alternates t
 - `xy.seq.pattern('a:a2- f:f:e:e:d:d:d:d*3-')`// go wild!
 
 ##### Melodies
-- `xy.seq.pattern('4g3 4a3 4f3-- 4f2-- 2c3 2r')`// close encounters of 3rd kind 
-- _more soon_
+A small collection of tunes and their patterns.
 
+```js
+// close encounters of 3rd kind
+xy.seq.pattern('4A3 4B3 4G3-- 4G2-- 2D3 2r 4A2 4B2 4G2-- 4G1-- 2D2 2r')
+
+// more soon...
+```
 
 #### Events
 You can also trigger events whenever a new note is played or ended, ie draw a shape or change values on each note.
@@ -706,6 +711,6 @@ This project is licensed under the GNU GPLv3 License - see [LICENSE.md](https://
 
 ### Shoutouts
 
-* [Just Van Rossum](http://dailydrawbot.tumblr.com), the enlightening conversation on my X-Y attempts baaack in 2017.
 * [Stefanie Bräuer](https://stefaniebraeuer.ch/), feeding the obsession with crucial theory + context.
+* [Just Van Rossum](http://dailydrawbot.tumblr.com), the enlightening conversation on my X-Y attempts baaack in 2017.
 * [Neil Thapen](https://dood.al/oscilloscope/), that amazing virtual oscilloscope rendering.

@@ -2677,7 +2677,7 @@ by Neil Thapen
 venuspatrol.nfshost.com
 
 
-Modified and embedded with permission as XXY_ into XYscope.js 2025
+Modified and embedded with permission as XXY into XYscope.js 2025
 cc teddavis.org / FFD8
 
 

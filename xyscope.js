@@ -2676,10 +2676,8 @@ version 1.0, April 2017
 by Neil Thapen
 venuspatrol.nfshost.com
 
-Copyright 2017 Neil Thapen
 
-
-Modified and embedded as XXY_ into XYscope.js 2025
+Modified and embedded with permission as XXY_ into XYscope.js 2025
 cc teddavis.org / FFD8
 
 

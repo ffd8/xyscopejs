@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+
 	<title>XYscope.js</title>
 	<link rel="stylesheet" href="includes/css/styles.css">
 	<link rel="stylesheet" href="includes/js/highlight/docco.css">
@@ -13,6 +15,7 @@
 		}
 		#spacer{
 			position: relative;
+			width:100vw;
 			height: 100vh;
 		}
 		canvas{
@@ -24,6 +27,15 @@
 			height:100vh;
 			margin:0;
 		}
+		#crtCanvas{
+				position:fixed !important;
+				width:100%;
+				height:100%;
+				z-index:1;
+			}
+		.p5Canvas{
+			position:fixed !important;
+		}
 		code{
 			border:1px solid #ddd;
 			border-radius:3px;
@@ -34,10 +46,10 @@
 			z-index:12;
 			top:0;
 			left:0;
-			width:100vw;
-			height:100vh;
+			width:100%;
+			height:100%;
 			background-image: url(includes/images/crt-blend-green.png);
-			background-size: 100vw 100vh;
+			background-size: 100% 100%;
 			mix-blend-mode:multiply !important;
 			pointer-events: none;
 		}
@@ -91,7 +103,7 @@
 		}
 	</style>
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
-	<script type="text/javascript" src="xyscope.js"></script>
+	<script type="text/javascript" src="xyscope.js?2"></script>
 </head>
 <body>
 	<script src="includes/js/stmd.js"></script>
@@ -149,6 +161,7 @@
 				let spacer = document.getElementById('spacer')
 				xy.seq.bpm(60 + window.scrollY/100)
 				// console.log(xy.seq.bpm())
+				// document.getElementById('crtCanvas').style.position = 'fixed !important'
 
 				if(window.scrollY > spacer.offsetTop - 1){
 					bgSettings.per = 2

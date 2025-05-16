@@ -1,14 +1,26 @@
 /* 
-	XYscope.js v0.4.2
+	XYscope.js v0.4.3
 	cc teddavis.org 2025
 */
 
 window.XYscope = class XYscopeJS {
-	constructor(p, xyAC = null) {
-		this.version = '0.4.2'
+	constructor(p, xyAC = null, opts = null) {
+		this.version = '0.4.3'
 		this.id = Math.floor(Math.random() * 9999)
 		this.p = p // reference to the p5 instance
+
+		this.opts = opts
 		this.xyAC = xyAC
+
+		// console.log(typeof xyAC)
+		if(typeof xyAC == 'object' && xyAC != null){
+			// console.log(xyAC)
+			if(xyAC.hasOwnProperty('channels')){ // *** find better filter for ac
+				this.opts = JSON.parse(JSON.stringify(xyAC))
+				this.xyAC = null
+			}
+		}
+
 		this.webgl = this.p._renderer.drawingContext instanceof CanvasRenderingContext2D ? false : true
 		this.ellipsePoints = 50
 		this.shapes = []
@@ -22,11 +34,20 @@ window.XYscope = class XYscopeJS {
 		this.oscillatorNode
 		this.msgBuffer = []
 		this.useLaser = false
-		this.channelData = {l: [], r: []}
+		this.channels = {left: 0, right: 1}
+
+		// console.log(this.opts)
+		if(this.opts != null){
+			if(this.opts.hasOwnProperty('channels')){
+				this.channels.left = this.opts.channels[0]
+				this.channels.right = this.opts.channels[1]
+			}
+		}
 
 		this.coords = {x: [], y: []}
 		this.frequency = {x: 50, y: 50}
 		this.amplitude = {x: 1.0, y: 1.0}
+		this.mirrorCoords = {x: 1, y: 1}
 
 		this.interpolation = true
 
@@ -78,6 +99,7 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 	this.index = 0
 	
 	// Initialize frequency, amplitude, and coordinates as objects
+	this.channels = [${this.channels.left}, ${this.channels.right}] // *** make as constructor custom!
 	this.frequency = { x: 50, y: 50 }
 	this.amplitude = { x: 1.0, y: 1.0 }
 	this.coords = { x: [], y: [] }
@@ -131,9 +153,11 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 
 	process(inputs, outputs, parameters) {
 		const output = outputs[0]
-		const leftChannel = output[0]
-		const rightChannel = output.length > 1 ? output[1] : leftChannel
-
+		const leftChannelSelector = this.channels[0] < output.length ? this.channels[0] : 0
+		const leftChannel = output[leftChannelSelector]
+		const rightChannelSelector = this.channels[1] < output.length ? this.channels[1] : 1
+		const rightChannel = output[rightChannelSelector]
+			// console.log([this.channels[0], this.channels[1]])
 		// *** future: RGB LASER if DAC with 5+ channels, or multiple-channel scopes??
 		// const rChannel = output.length > 4 ? output[2] : null
 		// const gChannel = output.length > 4 ? output[3] : null
@@ -157,9 +181,11 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		const indexIncrementLeft = effectiveFrequencyX / this.sampleRate
 		const indexIncrementRight = effectiveFrequencyY / this.sampleRate
 
-
 		if (xCoords.length > 0 && yCoords.length > 0) {
+			let tempL = new Array(leftChannel.length)
+			let tempR = new Array(leftChannel.length)
 			for (let i = 0; i < leftChannel.length; i++) {
+				// console.log(xCoords.length)
 				let indexLeft = Math.floor(leftIndex * xCoords.length) % xCoords.length
 				let indexRight = Math.floor(rightIndex * yCoords.length) % yCoords.length
 
@@ -197,6 +223,9 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 				leftChannel[i] = rawLeftValue
 				rightChannel[i] = rawRightValue
 
+				// tempL[i] = rawLeftValue
+				// tempR[i] = rawRightValue
+
 				// *** future: laser if 5+ channels
 				// *** use XYscope style of RGBshapes collection
 				// if(rChannel != null){
@@ -209,6 +238,18 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 				leftIndex += indexIncrementLeft
 				rightIndex += indexIncrementRight
 			}
+			// console.log(tempL)
+			
+			// let fadeInLength = 0.00001;
+			// let fadeInSampleLength = Math.floor(this.sampleRate * fadeInLength);
+			// for(let i=0; i < leftChannel.length; i++){
+			// 	// let att = i / fadeInSampleLength;
+			// 	let att = Math.min(i / fadeInSampleLength, 1.0);
+			// 	leftChannel[i] = tempL[i] * att
+			// 	rightChannel[i] = tempR[i] * att
+			// }
+			// leftChannel = tempL
+			// rightChannel = tempR
 		}
 
 		// send messages from processor
@@ -233,8 +274,9 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 			this.ac = this.xyAC
 		}else{
 			this.ac = new AudioContext() //({sampleRate: 96000})
-			console.log(`XYscope.js v${this.version} \nChannels: ${this.ac.destination.maxChannelCount}`)
-			this.ac.destination.channelCount = this.ac.destination.maxChannelCount
+			this.channelCount = this.ac.destination.maxChannelCount
+			console.log(`XYscope.js v${this.version} \nChannels: ${this.channelCount}`)
+			this.ac.destination.channelCount = this.channelCount
 		}
 		
 		this.outXY = this.ac
@@ -243,17 +285,34 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		this.analyserL = this.ac.createAnalyser()
 		this.analyserR = this.ac.createAnalyser()
 
+
+
 		this.ac.audioWorklet.addModule(url).then(() => {
 			this.oscillatorNode = new AudioWorkletNode(this.ac, `xyscope-processor-${this.id}`, {
 				numberOfOutputs: 1,
 				outputChannelCount: [this.ac.destination.maxChannelCount]
 			})
+
+			// Create a compressor node
+			// const compressor = this.ac.createDynamicsCompressor();
+			// compressor.threshold.setValueAtTime(-80, this.ac.currentTime);
+			// compressor.knee.setValueAtTime(5, this.ac.currentTime);
+			// compressor.ratio.setValueAtTime(20, this.ac.currentTime);
+			// compressor.attack.setValueAtTime(0.0, this.ac.currentTime);
+			// compressor.release.setValueAtTime(0.75, this.ac.currentTime);
+
+			// this.gainNode.connect(compressor)
 			
 			this.oscillatorNode.connect(this.gainNode)
 			this.oscillatorNode.connect(this.splitter)
 			
 			this.splitter.connect(this.analyserL, 0)
 			this.splitter.connect(this.analyserR, 1)
+
+			
+
+			// this.gainNode.connect(compressor);
+			// compressor.connect(this.ac.destination)
 
 			this.gainNode.connect(this.ac.destination)
 			this.acSampleRate = this.ac.sampleRate
@@ -300,6 +359,28 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 			// document.getElementById("crtCanvas").style.left = this.p.windowWidth/2 - this.cnv.width/2 + 'px'
 		}
 	}
+
+	saveScope(){
+		let resizedCanvas = document.createElement("canvas");
+		let resizedContext = resizedCanvas.getContext("2d");
+		resizedCanvas.height = this.p.windowHeight;
+		resizedCanvas.width = this.p.windowWidth;
+		let canvas = document.getElementById("original-canvas");
+		resizedContext.drawImage(this.scope, 0, 0, resizedCanvas.width, resizedCanvas.height);
+
+		let canvasUrl = resizedCanvas.toDataURL("image/png;base64");
+		const createEl = document.createElement('a');
+		createEl.href = canvasUrl;
+		createEl.download = "XYscopejs_";
+		createEl.click();
+		
+		createEl.remove();
+		resizedCanvas.remove();
+	}
+
+	// getScope(){
+	// 	// *** return canvas as image for p5
+	// }
 
 	buildScope(){
 		this.scopeOpts = {
@@ -656,6 +737,16 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 				}
 			}
 
+			if(opts.hasOwnProperty('hide') && opts.hide !== this.scopeOpts.hide){
+				if(opts.hide){
+					scope.style.visibility = 'hidden'
+					this.scopeVisible = false
+				}else{
+					scope.style.visibility = 'visible'
+					this.scopeVisible = true
+				}
+			}
+
 			if(opts.hasOwnProperty('fullscreen') && opts.fullscreen !== this.scopeOpts.fullscreen){
 				if(opts.fullscreen){
 					this.scopeFullscreenCheckbox.checked(true)
@@ -837,7 +928,12 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 			return this.frequency
 		}
 
-		this.frequency = {x: freqX, y: freqY !== undefined ? freqY : freqX}
+		if(freqX != null && typeof freqX === 'object'){
+			this.frequency = {x: freqX.x, y: freqX.y}
+		}else{
+			this.frequency = {x: freqX, y: freqY !== undefined ? freqY : freqX}
+		}
+
 		this.postMessage({
 			type: 'freq',
 			frequency: { x: this.frequency.x, y: this.frequency.y }
@@ -863,6 +959,10 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 
 	noSmooth() {
 		this.interpolation = false
+	}
+
+	mirror(x = 1, y = 1){
+		this.mirrorCoords = {x: this.p.constrain(Math.floor(x), -1, 1), y: this.p.constrain(Math.floor(y), -1, 1)}
 	}
 
 
@@ -1222,7 +1322,7 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 
 
 	point(x = 0, y = 0, z = 0) {
-		if(arguments.length < 4){
+		if(arguments.length < 2){
 			x = this.p.random(this.p.width)
 			y = this.p.random(this.p.height)
 			if(this.webgl){
@@ -1535,6 +1635,9 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		let tempAM = this.p.angleMode()
 		this.p.angleMode(RADIANS)
 		let vertices = []
+
+		detailX = parseInt(detailX)
+		detailY = parseInt(detailY)
 		for (let i = 0; i <= detailX; i++) {
 			let theta = this.p.map(i, 0, detailX, 0, this.p.TWO_PI)
 			for (let j = 0; j <= detailY; j++) {
@@ -1599,6 +1702,9 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		let tempAM = this.p.angleMode()
 		this.p.angleMode(RADIANS)
 		let vertices = []
+
+		detailX = parseInt(detailX)
+		detailY = parseInt(detailY)
 		for (let i = 0; i <= detailX; i++) {
 			let theta = this.p.map(i, 0, detailX, 0, this.p.TWO_PI)
 			for (let j = 0; j <= detailY; j++) {
@@ -1663,6 +1769,9 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		let tempAM = this.p.angleMode()
 		this.p.angleMode(RADIANS)
 		let vertices = []
+
+		detailX = parseInt(detailX)
+		detailY = parseInt(detailY)
 		for (let i = 0; i <= detailX; i++) {
 			let theta = this.p.map(i, 0, detailX, 0, this.p.TWO_PI)
 			for (let j = 0; j <= detailY; j++) {
@@ -2173,12 +2282,12 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 
 	normX(x) {
 		x = this.p.constrain(x, 0, this.p.width)
-		return (x / this.p.width - .5) * 2.0
+		return (x / this.p.width - .5) * 2.0 * this.mirrorCoords.x
 	}
 
 	normY(y) {
 		y = this.p.constrain(y, 0, this.p.height)
-		return (y / this.p.height - .5) * 2.0
+		return (y / this.p.height - .5) * 2.0 * this.mirrorCoords.y
 	}
 
 	createVector(x, y, z) {
@@ -2727,7 +2836,7 @@ var XXY_AudioSystem =
 
 		this.audioVolumeNode = this.ac.createGain();
 
-		this.scopeNode = this.ac.createScriptProcessor(this.bufferSize, 2, 2);
+		this.scopeNode = this.ac.createScriptProcessor(this.bufferSize, this.ac.destination.maxChannelCount, this.ac.destination.maxChannelCount);
 		this.scopeNode.onaudioprocess = XXY_doScriptProcessor;
 
 		// Connect the oscillatorNode to the scopeNode
@@ -3717,10 +3826,12 @@ function XXY_doScriptProcessor(event)
 	var ySamples = new Float32Array(512);
 	var sweepPosition = -1;
 	var belowTrigger = false;
-	var xSamplesRaw = event.inputBuffer.getChannelData(0);
-	var ySamplesRaw = event.inputBuffer.getChannelData(1);
-	var xOut = event.outputBuffer.getChannelData(0);
-	var yOut = event.outputBuffer.getChannelData(1);
+	var channelLeft = XXY_AudioSystem.xy.channels.left < XXY_AudioSystem.xy.channelCount ? XXY_AudioSystem.xy.channels.left : 0
+	var channelRight = XXY_AudioSystem.xy.channels.right < XXY_AudioSystem.xy.channelCount ? XXY_AudioSystem.xy.channels.right : 1
+	var xSamplesRaw = event.inputBuffer.getChannelData(channelLeft);
+	var ySamplesRaw = event.inputBuffer.getChannelData(channelRight);
+	var xOut = event.outputBuffer.getChannelData(channelLeft);
+	var yOut = event.outputBuffer.getChannelData(channelRight);
 
 	var length = xSamplesRaw.length;
 	for (var i=0; i<length; i++)

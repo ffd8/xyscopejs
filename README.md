@@ -1,5 +1,5 @@
 # XYscope.js
-v 0.4.2  
+v 0.4.3  
 cc [teddavis.org](https://teddavis.org) 2025
 
 p5.js library to render graphics on analog vector displays.  
@@ -20,18 +20,18 @@ XYscope.js converts the coordinates of primative shapes (point, line, rect, elli
 
 ## Getting Started
 ### Install
-Download and include locally, or via [CDN](https://cdn.jsdelivr.net/gh/ffd8/xyscopejs@0.4.2/xyscope.js):  
-`<script src="https://cdn.jsdelivr.net/gh/ffd8/xyscopejs@0.4.2/xyscope.js"></script>` 
+Download and include locally, or via [CDN](https://cdn.jsdelivr.net/gh/ffd8/xyscopejs@latest/xyscope.js):  
+`<script src="https://cdn.jsdelivr.net/gh/ffd8/xyscopejs@latest/xyscope.js"></script>` 
 
 For live-coding in [P5LIVE](https://p5live.org), include it in the libs array:  
-`let libs = ['https://cdn.jsdelivr.net/gh/ffd8/xyscopejs@0.4.2/xyscope.js']`
+`let libs = ['https://cdn.jsdelivr.net/gh/ffd8/xyscopejs@latest/xyscope.js']`
 
 ### Setup
 Here's a basic template to start live-coding within P5LIVE + XYscope.js.  
 Essentially, add `xy.` and draw between `clearWaves()` and `buildWaves()`!
 
 ```js
-let libs = ['https://cdn.jsdelivr.net/gh/ffd8/xyscopejs@0.4.2/xyscope.js', 'includes/libs/xyscope.js']
+let libs = ['https://cdn.jsdelivr.net/gh/ffd8/xyscopejs@latest/xyscope.js']
 let xy // XYscope.js instance
 
 function setup() {
@@ -104,7 +104,7 @@ _ILDA RGB Laser specific support is pending... working on multi-channel support 
 Something very unique to this workflow is sending multiple audio signals to the oscilloscope, which interfer and modulate one another. As these waves combine, their amplitude and frequency determine ones influence on other waves. Key is having different frequencies and amplitudes to modulate off one another. The lower the frequency, the more it will push other waves around. The lower the amp, the less influence it has on the additive waveform. We can easily patch multiple instances of XYscope.js into the same audio output, thus creating endless surprises as the waves interact. 
 
 ```js
-let libs = ['https://cdn.jsdelivr.net/gh/ffd8/xyscopejs@0.4.2/xyscope.js', 'includes/libs/xyscope.js']
+let libs = ['https://cdn.jsdelivr.net/gh/ffd8/xyscopejs@latest/xyscope.js', 'includes/libs/xyscope.js']
 let xy // XYscope.js instance
 
 function setup() {

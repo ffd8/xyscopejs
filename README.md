@@ -1,5 +1,5 @@
 # XYscope.js
-v 0.4.3  
+v 0.4.4  
 cc [teddavis.org](https://teddavis.org) 2025
 
 p5.js library to render graphics on analog vector displays.  

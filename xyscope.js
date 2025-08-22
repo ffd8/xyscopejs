@@ -1,11 +1,11 @@
 /* 
-	XYscope.js v0.4.3
+	XYscope.js v0.4.4
 	cc teddavis.org 2025
 */
 
 window.XYscope = class XYscopeJS {
 	constructor(p, xyAC = null, opts = null) {
-		this.version = '0.4.3'
+		this.version = '0.4.4'
 		this.id = Math.floor(Math.random() * 9999)
 		this.p = p // reference to the p5 instance
 
@@ -868,11 +868,19 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		}
 	}
 
+	lpf(freq){
+		this.lowpass(freq)
+	}
+
 	lowpass(freq){
 		this.postMessage({
 			type: 'lowPassFreq',
 			lowPassFreq: freq,
 		})
+	}
+
+	hpf(freq){
+		this.highpass(freq)
 	}
 
 	highpass(freq){
@@ -923,6 +931,10 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		return Math.round(hue)
 	}
 
+	ease(iVal, oVal, eVal){
+		return oVal += (iVal - oVal) * eVal;
+	}
+
 	freq(freqX, freqY) {
 		if(arguments.length == 0){
 			return this.frequency
@@ -931,7 +943,13 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		if(freqX != null && typeof freqX === 'object'){
 			this.frequency = {x: freqX.x, y: freqX.y}
 		}else{
-			this.frequency = {x: freqX, y: freqY !== undefined ? freqY : freqX}
+			if(freqY > 0 && freqY <= 1){
+				let easeFreq = this.ease(freqX, this.frequency.x, freqY)
+				// this.ease(freqX, this.frequency.y, freqY)
+				this.frequency = {x: easeFreq, y: easeFreq}
+			}else{
+				this.frequency = {x: freqX, y: freqY !== undefined ? freqY : freqX}
+			}
 		}
 
 		this.postMessage({
@@ -945,7 +963,17 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 			return this.amplitude
 		}
 
-		this.amplitude = {x: ampX, y: ampY !== undefined ? ampY : ampX}
+		if(ampX != null && typeof ampX === 'object'){
+			this.amplitude = {x: ampX.x, y: ampX.y}
+		}else{
+			if(ampY > 0 && ampY <= 1){
+				let easeAmp = this.ease(ampX, this.amplitude.x, ampY)
+				this.amplitude = {x: easeAmp, y: easeAmp}
+			}else{
+				this.amplitude = {x: ampX, y: ampY !== undefined ? ampY : ampX}
+			}
+		}
+
 		this.postMessage({
 			type: 'amp',
 			amplitude: { x: this.amplitude.x, y: this.amplitude.y }
@@ -2111,14 +2139,17 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 	}
 
 	textParse(s, x, y) {
-		x += 5 * this.hfactor
+		x += 12 * this.hfactor
 
 		switch (this.textAlignX) {
+			case this.p.LEFT:
+				x -= 5 * this.hfactor
+				break
 			case this.p.CENTER:
 				x -= this.textWidth(s) / 2
 				break
 			case this.p.RIGHT:
-				x -= this.textWidth(s)
+				x -= this.textWidth(s) - 5 * this.hfactor
 				break
 		}
 
@@ -2197,14 +2228,17 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 	}
 
 	textPathsParse(s, x, y, coords) {
-		x += 5 * this.hfactor
+		x += 12 * this.hfactor
 
 		switch (this.textAlignX) {
+			case this.p.LEFT:
+				x -= 5 * this.hfactor
+				break
 			case this.p.CENTER:
 				x -= this.textWidth(s) / 2
 				break
 			case this.p.RIGHT:
-				x -= this.textWidth(s)
+				x -= this.textWidth(s) - 5 * this.hfactor
 				break
 		}
 

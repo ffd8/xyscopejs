@@ -186,8 +186,8 @@ All examples below use `xy` as the instance prefix.
 [Modulation](#modulation)
   * [freq()](#freq())
   * [amp()](#amp())
-  * [highpass()](#highpass())
   * [lowpass()](#lowpass())
+  * [highpass()](#highpass())
 
 [Sequencer](#sequencer)
   * [Settings](#settings)
@@ -498,7 +498,8 @@ xy.freq().x   // returns frequency of x oscillator
 
 // set
 xy.freq(freqXY)  // set both X/Y levels, default is 50.0 
-xy.freq(freqX, freqY) // set x, y to separate frequencies  
+xy.freq({x:freqX, y:freqY}) // set x, y to separate frequencies 
+xy.freq(freqXY, easingVal) // set x freq with easing speed 
 ```
 
 #### amp()
@@ -511,21 +512,24 @@ xy.amp().x // returns amplitude of x oscillator
 
 // set
 xy.amp(ampXY) // set both X/Y levels, default is 1.0 
-xy.amp(ampX, ampY) // set x, y to separate amplitudes 
-```
-
-#### highpass()
-A very experimental [high-pass filter](https://en.wikipedia.org/wiki/High-pass_filter) has been implemented.
-
-```js
-xy.highpass(freq) // set cutoff for high-pass filter 
+xy.amp({x:ampX, y:ampY}) // set x, y to separate amplitudes 
+amp(ampXY, easingVal) // set XY amp with easing speed 
 ```
 
 #### lowpass()
 A very experimental [low-pass filter](https://en.wikipedia.org/wiki/Low-pass_filter) has been implemented.
 
 ```js
+xy.lpf(freq) // set cutoff for low-pass filter 
 xy.lowpass(freq) // set cutoff for low-pass filter 
+```
+
+#### highpass()
+A very experimental [high-pass filter](https://en.wikipedia.org/wiki/High-pass_filter) has been implemented.
+
+```js
+xy.hpf(freq) // set cutoff for high-pass filter 
+xy.highpass(freq) // set cutoff for high-pass filter 
 ```
 
 ---

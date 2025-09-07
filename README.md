@@ -173,6 +173,7 @@ All examples below use `xy` as the instance prefix.
   * [sphere()](#sphere())
   * [ellipsoid()](#ellipsoid())
   * [torus()](#torus())
+  * [model()](#model())
 
 [Text](#text)
   * [loadFont()](#loadfont())
@@ -200,6 +201,7 @@ All examples below use `xy` as the instance prefix.
 
 [Rendering](#rendering)
   * [Virtual Scope](#virtual-scope)
+  * [saveScope](#savescope)
   * [Debug views](#debug-views)
 
 [Camera](#camera)
@@ -412,6 +414,16 @@ xy.torus(radius, tubeRadius, opts) // {lat:0, long:1}
 xy.torus(radius, tubeRadius, detailX) // default 24
 xy.torus(radius, tubeRadius, detailX, detailY) // default 24, 16
 xy.torus(radius, tubeRadius, detailX, detailY, opts) // {lat:0, long:1}
+```
+
+#### model()
+Draw an imported obj file as either points or connected vertex lines. Optionally call `modelPoints()` if you want to return an array of points for rendering as different shapes, filtering, etc.
+
+```js
+model(obj)
+model(obj, shape) // 'points' (default) or 'vertex'
+
+modelPoints(obj) // returns array of obj points without rendering
 ```
 
 ---
@@ -660,6 +672,14 @@ xy.drawXY({gui:0, fs:1, o:.75, t:.01, h:120, g:.1, i:.0, p:-1}) // shorthand
 
 ```
 For further experiments, the XXY canvas is available as `xy.scope`.
+
+#### saveScope()
+Export the XXY canvas as static png files with the following:
+
+```js
+xy.saveScope() // saves as 'XYscope.png'
+xy.saveScope(filename) // give custom name (no suffix needed)
+```
 
 #### Debug views
 Beyond the virtual scope, there's plenty of interesting debug views to check out, from monitoring the waveform (wavetable) used for the oscillators, to the wave itself with time flowing through it. 

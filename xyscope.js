@@ -1,11 +1,11 @@
 /* 
-	XYscope.js v0.4.4
+	XYscope.js v0.4.5
 	cc teddavis.org 2025
 */
 
 window.XYscope = class XYscopeJS {
 	constructor(p, xyAC = null, opts = null) {
-		this.version = '0.4.4'
+		this.version = '0.4.5'
 		this.id = Math.floor(Math.random() * 9999)
 		this.p = p // reference to the p5 instance
 
@@ -182,8 +182,6 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		const indexIncrementRight = effectiveFrequencyY / this.sampleRate
 
 		if (xCoords.length > 0 && yCoords.length > 0) {
-			let tempL = new Array(leftChannel.length)
-			let tempR = new Array(leftChannel.length)
 			for (let i = 0; i < leftChannel.length; i++) {
 				// console.log(xCoords.length)
 				let indexLeft = Math.floor(leftIndex * xCoords.length) % xCoords.length
@@ -223,9 +221,6 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 				leftChannel[i] = rawLeftValue
 				rightChannel[i] = rawRightValue
 
-				// tempL[i] = rawLeftValue
-				// tempR[i] = rawRightValue
-
 				// *** future: laser if 5+ channels
 				// *** use XYscope style of RGBshapes collection
 				// if(rChannel != null){
@@ -238,18 +233,6 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 				leftIndex += indexIncrementLeft
 				rightIndex += indexIncrementRight
 			}
-			// console.log(tempL)
-			
-			// let fadeInLength = 0.00001;
-			// let fadeInSampleLength = Math.floor(this.sampleRate * fadeInLength);
-			// for(let i=0; i < leftChannel.length; i++){
-			// 	// let att = i / fadeInSampleLength;
-			// 	let att = Math.min(i / fadeInSampleLength, 1.0);
-			// 	leftChannel[i] = tempL[i] * att
-			// 	rightChannel[i] = tempR[i] * att
-			// }
-			// leftChannel = tempL
-			// rightChannel = tempR
 		}
 
 		// send messages from processor
@@ -360,7 +343,7 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		}
 	}
 
-	saveScope(){
+	saveScope(filename = 'XYscopejs'){
 		let resizedCanvas = document.createElement("canvas");
 		let resizedContext = resizedCanvas.getContext("2d");
 		resizedCanvas.height = this.p.windowHeight;
@@ -371,7 +354,7 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		let canvasUrl = resizedCanvas.toDataURL("image/png;base64");
 		const createEl = document.createElement('a');
 		createEl.href = canvasUrl;
-		createEl.download = "XYscopejs_";
+		createEl.download = filename;
 		createEl.click();
 		
 		createEl.remove();

@@ -420,10 +420,10 @@ xy.torus(radius, tubeRadius, detailX, detailY, opts) // {lat:0, long:1}
 Draw an imported obj file as either points or connected vertex lines. Optionally call `modelPoints()` if you want to return an array of points for rendering as different shapes, filtering, etc.
 
 ```js
-model(obj)
-model(obj, shape) // 'points' (default) or 'vertex'
+xy.model(obj)
+xy.model(obj, shape) // 'points' (default) or 'vertex'
 
-modelPoints(obj) // returns array of obj points without rendering
+xy.modelPoints(obj) // returns array of obj points without rendering
 ```
 
 ---

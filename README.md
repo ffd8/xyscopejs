@@ -201,7 +201,7 @@ All examples below use `xy` as the instance prefix.
 
 [Rendering](#rendering)
   * [Virtual Scope](#virtual-scope)
-  * [saveScope](#savescope)
+  * [saveScope](#savescope())
   * [Debug views](#debug-views)
 
 [Camera](#camera)

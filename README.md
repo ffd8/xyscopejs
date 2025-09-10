@@ -1,5 +1,5 @@
 # XYscope.js
-v 0.4.5  
+v 0.4.6  
 cc [teddavis.org](https://teddavis.org) 2025
 
 p5.js library to render graphics on analog vector displays.  
@@ -158,6 +158,7 @@ All examples below use `xy` as the instance prefix.
   * [smooth()](#smooth())
   * [noSmooth()](#nosmooth())
   * [limitPath()](#limitpath())
+  * [mirror()](#mirror())
 
 [Primitive Shapes](#primitive-shapes)
   * [point()](#point())
@@ -269,6 +270,15 @@ Prevent coordinates outside of canvas from being drawn (creates a wall/box of li
 xy.limitPath() // uses width, height of canvas as border to limit path
 xy.limitPath(newLimit) // set inner border (px) amount
 xy.limitPath(-1) // disables limitPath
+```
+
+#### mirror()
+Optionally mirror (flip) the X and/or Y signals, incase vector display is inverted on any axis. Default is (1, 1).
+
+```js
+xy.mirror(-1, 1) // flip x axis
+xy.mirror(1, -1) // flip y axis
+xy.mirror(-1, -1) // flip both x/y axis
 ```
 
 ---
@@ -509,9 +519,10 @@ xy.freq() // returns object (.x, .y) of freqs
 xy.freq().x   // returns frequency of x oscillator 
 
 // set
-xy.freq(freqXY)  // set both X/Y levels, default is 50.0 
-xy.freq({x:freqX, y:freqY}) // set x, y to separate frequencies 
-xy.freq(freqXY, easingVal) // set x freq with easing speed 
+xy.freq(freqXY)  // same x/y freq, default is 50.0 
+xy.freq(freqXY, easingVal) // same x/y freq with easing (0.0 - 1.0) 
+xy.freq({x:freqX, y:freqY}) // separate x, y freqs 
+xy.freq({x:freqX, y:freqY}, easingVal) // separate x, y freqs with easing 
 ```
 
 #### amp()
@@ -523,9 +534,10 @@ xy.amp()   // returns object (.x, .y) of amps
 xy.amp().x // returns amplitude of x oscillator
 
 // set
-xy.amp(ampXY) // set both X/Y levels, default is 1.0 
-xy.amp({x:ampX, y:ampY}) // set x, y to separate amplitudes 
-amp(ampXY, easingVal) // set XY amp with easing speed 
+xy.amp(ampXY) // same x/y levels, default is 1.0 
+amp(ampXY, easingVal) // same x/y amp with easing 
+xy.amp({x:ampX, y:ampY}) // separate x, y amplitudes 
+xy.amp({x:ampX, y:ampY}, easingVal) // separate x, y amplitudes with easing
 ```
 
 #### lowpass()
@@ -582,7 +594,7 @@ There's a special notation for adjusting duration, octave, repeats, alternates t
 ##### Rests
 - `xy.seq.pattern('a')`// repeated note 
 - `xy.seq.pattern('a ')`// repeated note, rest
-- `xy.seq.pattern('a  ')`// repeated note, double rest 
+- `xy.seq.pattern('a  ')`// repeated note, double rest (hidden extra space)
 - `xy.seq.pattern('a--')`// repeated note, double rest  (can use ' ' or '-')
 - `xy.seq.pattern('a 32r d 16r f 4r')`// use `#r` for custom rest length
 
@@ -619,7 +631,7 @@ xy.seq.pattern('4A3 4B3 4G3-- 4G2-- 2D3 2r 4A2 4B2 4G2-- 4G1-- 2D2 2r')
 ```
 
 #### Events
-You can also trigger events whenever a new note is played or ended, ie draw a shape or change values on each note.
+You can trigger events whenever a new note (step) is played or ended, ie draw a shape or change values on each note. You can also trigger events at the end of a loop from the given pattern, ie change sequencer patterns at every loop cycle.
 
 ```js
 xy.seq.onStep((step) => {
@@ -629,6 +641,11 @@ xy.seq.onStep((step) => {
 
 xy.seq.onStepEnded((step) => {
 	// do something when step finished
+})
+
+xy.seq.onLoop((loopCount) => {
+	// do something when loop finished
+	// console.log(loopCount)
 })
 
 ```

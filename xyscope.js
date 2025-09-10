@@ -1,5 +1,5 @@
 /* 
-	XYscope.js v0.4.5
+	XYscope.js v0.4.6
 	cc teddavis.org 2025
 */
 
@@ -924,7 +924,13 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		}
 
 		if(freqX != null && typeof freqX === 'object'){
-			this.frequency = {x: freqX.x, y: freqX.y}
+			if(freqY != null && freqY > 0 && freqY <= 1){
+				let easeX = this.ease(freqX.x, this.frequency.x, freqY)
+				let easeY = this.ease(freqX.y, this.frequency.y, freqY)
+				this.frequency = {x: easeX, y: easeY}
+			}else{
+				this.frequency = {x: freqX.x, y: freqX.y}
+			}
 		}else{
 			if(freqY > 0 && freqY <= 1){
 				let easeFreq = this.ease(freqX, this.frequency.x, freqY)
@@ -947,7 +953,13 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		}
 
 		if(ampX != null && typeof ampX === 'object'){
-			this.amplitude = {x: ampX.x, y: ampX.y}
+			if(ampY != null && ampY > 0 && ampY <= 1){
+				let easeX = this.ease(ampX.x, this.amplitude.x, ampY)
+				let easeY = this.ease(ampX.y, this.amplitude.y, ampY)
+				this.amplitude = {x: easeX, y: easeY}
+			}else{
+				this.amplitude = {x: ampX.x, y: ampX.y}
+			}
 		}else{
 			if(ampY > 0 && ampY <= 1){
 				let easeAmp = this.ease(ampX, this.amplitude.x, ampY)
@@ -2409,6 +2421,8 @@ window.Sequencer = class Sequencer {
 			prest: {pitch:'', duration:8, frequency:null},
 		}
 		this.loop = true
+		this.loopCount = 0
+		this.isStarted = false
 		this.isPlaying = false
 		this.steps = []
 		this.step = {}
@@ -2421,6 +2435,7 @@ window.Sequencer = class Sequencer {
 		this.listeners = {}
 		this.onStepCallback = () => {}
 		this.onStepEndedCallback = () => {}
+		this.onLoopCallback = () => {}
 
 		this.acInstance = false
 		this.ac = null
@@ -2441,6 +2456,9 @@ window.Sequencer = class Sequencer {
 			if(opts.hasOwnProperty('onStepEnded')){
 				this.addEventListener('onStepEnded', opts.onStepEnded)
 			}
+			if(opts.hasOwnProperty('onLoop')){
+				this.addEventListener('onLoop', opts.onLoop)
+			}
 		}		
 
 	}
@@ -2454,6 +2472,12 @@ window.Sequencer = class Sequencer {
 	onStepEnded(callback = null) {
 		if(callback != null) {
 			this.onStepEndedCallback = callback
+		}
+	}
+
+	onLoop(callback = null) {
+		if(callback != null) {
+			this.onLoopCallback = callback
 		}
 	}
 
@@ -2489,6 +2513,10 @@ window.Sequencer = class Sequencer {
 		if(this.settings.ppattern != this.settings.pattern) {
 			this.settings.ppattern = this.settings.pattern
 			this.parseSteps()
+		}
+
+		if(this.isStarted && !this.isPlaying){
+			this.playSequence()
 		}
 	}
 
@@ -2762,6 +2790,10 @@ window.Sequencer = class Sequencer {
 
 		const loopHandler = () => {
 			if(this.isPlaying) {
+				this.loopCount++
+				this.onLoopCallback(this.loopCount)
+				this.emit('onLoop', this.loopCount)
+
 				this.isPlaying = false
 				this.playSequence()
 			}
@@ -2777,12 +2809,15 @@ window.Sequencer = class Sequencer {
 	}
 
 	start() {
+		this.isStarted = true
 		if(this.steps.length === 0) return
 		this.playSequence()
 	}
 
 	stop() {
 		this.isPlaying = false
+		this.isStarted = false
+		this.loopCount = 0
 		if(this.ac && !this.acInstance) {
 			this.ac.close().then(() => {
 				this.ac = null

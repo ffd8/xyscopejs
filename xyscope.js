@@ -5,7 +5,7 @@
 
 window.XYscope = class XYscopeJS {
 	constructor(p, xyAC = null, opts = null) {
-		this.version = '0.4.5'
+		this.version = '0.4.6'
 		this.id = Math.floor(Math.random() * 9999)
 		this.p = p // reference to the p5 instance
 

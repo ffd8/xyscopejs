@@ -1,5 +1,5 @@
 (function () {
-  var file = file || "README.md?"+Math.floor(Math.random(9999));
+  var file = file || "README.md?"+Math.floor(Math.random()*9999);
   var reader = new stmd.DocParser();
   var writer = new stmd.HtmlRenderer();
   var xhr = new XMLHttpRequest();

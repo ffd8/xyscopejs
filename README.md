@@ -1,5 +1,5 @@
 # XYscope.js
-v 0.4.6  
+v 0.4.7  
 cc [teddavis.org](https://teddavis.org) 2025
 
 p5.js library to render graphics on analog vector displays.  
@@ -188,6 +188,7 @@ All examples below use `xy` as the instance prefix.
 [Modulation](#modulation)
   * [freq()](#freq())
   * [amp()](#amp())
+  * [volume()](#volume())
   * [lowpass()](#lowpass())
   * [highpass()](#highpass())
 
@@ -540,6 +541,14 @@ xy.amp({x:ampX, y:ampY}) // separate x, y amplitudes
 xy.amp({x:ampX, y:ampY}, easingVal) // separate x, y amplitudes with easing
 ```
 
+#### volume()
+Set the volume (gain) of final audiocard output. Primarily intended for usage with XY-monitors that may be more sensitive than oscilloscopes, or when using the virtual scope, but don't want to hear the visualized audio. Whereas `amp()` changes the actual size of the waveform for shapes, `volume()` has no effect on the waveform. 
+
+```js
+xy.volume() // returns current volume
+xy.volume(0) // completely mutes the output audio
+``` 
+
 #### lowpass()
 A very experimental [low-pass filter](https://en.wikipedia.org/wiki/Low-pass_filter) has been implemented.
 
@@ -694,8 +703,18 @@ For further experiments, the XXY canvas is available as `xy.scope`.
 Export the XXY canvas as static png files with the following:
 
 ```js
+xy.save() // alias of saveScope()
 xy.saveScope() // saves as 'XYscope.png'
 xy.saveScope(filename) // give custom name (no suffix needed)
+```
+
+#### getScope()
+Returns the XXY canvas as a p5.js image (off-screen graphics buffer):
+
+```js
+xy.get() // alias of getScope()
+xy.getScope() // returns image 'xy0'
+xy.getScope(layerName) // use custom name for layer instead of 'xy0'
 ```
 
 #### Debug views

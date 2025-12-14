@@ -1,11 +1,11 @@
 /* 
-	XYscope.js v0.4.6
+	XYscope.js v0.4.7
 	cc teddavis.org 2025
 */
 
 window.XYscope = class XYscopeJS {
 	constructor(p, xyAC = null, opts = null) {
-		this.version = '0.4.6'
+		this.version = '0.4.7'
 		this.id = Math.floor(Math.random() * 9999)
 		this.p = p // reference to the p5 instance
 
@@ -316,7 +316,11 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 	}
 
 	volume(val){
-		this.gainNode.gain.setValueAtTime(this.p.constrain(val, 0, 1), 0);
+		if(val == undefined){
+			return this.gainNode.gain.value
+		}else{
+			this.gainNode.gain.setValueAtTime(this.p.constrain(val, 0, 1), 0);
+		}
 	}
 
 	fullScreen(width = this.p.windowHeight, height = this.p.windowHeight){
@@ -344,26 +348,52 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 	}
 
 	saveScope(filename = 'XYscopejs'){
-		let resizedCanvas = document.createElement("canvas");
-		let resizedContext = resizedCanvas.getContext("2d");
-		resizedCanvas.height = this.p.windowHeight;
-		resizedCanvas.width = this.p.windowWidth;
-		let canvas = document.getElementById("original-canvas");
-		resizedContext.drawImage(this.scope, 0, 0, resizedCanvas.width, resizedCanvas.height);
+		let resizedCanvas = document.createElement("canvas")
+		let resizedContext = resizedCanvas.getContext("2d")
+		resizedCanvas.height = this.p.windowHeight
+		resizedCanvas.width = this.p.windowWidth
+		let canvas = document.getElementById("original-canvas")
+		resizedContext.drawImage(this.scope, 0, 0, resizedCanvas.width, resizedCanvas.height)
 
-		let canvasUrl = resizedCanvas.toDataURL("image/png;base64");
-		const createEl = document.createElement('a');
-		createEl.href = canvasUrl;
-		createEl.download = filename;
-		createEl.click();
+		let canvasUrl = resizedCanvas.toDataURL("image/png;base64")
+		const createEl = document.createElement('a')
+		createEl.href = canvasUrl
+		createEl.download = filename
+		createEl.click()
 		
-		createEl.remove();
-		resizedCanvas.remove();
+		createEl.remove()
+		resizedCanvas.remove()
 	}
 
-	// getScope(){
-	// 	// *** return canvas as image for p5
-	// }
+	save(filename = 'XYscopejs'){
+		this.saveScope(filename)
+	}
+
+	// return canvas as image for p5
+	getScope(layer = 'xy0'){
+		layer = this.checkLayer(layer)
+		layer.clear()
+		if(this.scope != null){
+			layer.drawingContext.drawImage(this.scope, 0, 0, layer.width, layer.height)
+		}
+		return layer
+	}
+
+	get(layer = 'xy0'){
+		this.getScope(layer)
+	}
+
+	// from HY5
+	checkLayer(layer = 'xy0'){
+		if(typeof window[layer] === 'undefined'){
+			window[layer] = createGraphics(width, height)
+			return window[layer]
+		}else if(typeof layer === 'string'){
+			return window[layer]
+		}else{
+			return layer
+		}
+	}
 
 	buildScope(){
 		this.scopeOpts = {

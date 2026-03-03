@@ -2021,7 +2021,7 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 12345  9HZLFL[ RLFYF RLPTP
 12345 23H]ZKYIWGUFQFOGMILKKNKSLVMXOZQ[U[WZYXZVZS RUSZS
 12345  9G]KFK[ RYFY[ RKPYP
-12345  3NVKFK[
+12345  3NVRFR[
 12345 11JZVFVVUYTZR[P[NZMYLVLT
 12345  9G\\KFK[ RYFKT RPOY[
 12345  6HYLFL[ RL[X[
@@ -2053,10 +2053,10 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 12345  9MYWFUFSGRJR[ ROMVM
 12345 23I\\XMX]W\`VaTbQbOa RXPVNTMQMONMPLSLUMXOZQ[T[VZXX
 12345 11I\\MFM[ RMQPNRMUMWNXQX[
-12345  9NVKFMGNFMEKF RMMM[
+12345  9NVQFRGSFREQF RRMR[
 12345 12MWRFSGTFSERF RSMS^RaPbNb
 12345  9IZMFM[ RWMMW RQSX[
-12345  3NVKFK[
+12345  3NVRFR[
 12345 19CaGMG[ RGQJNLMOMQNRQR[ RRQUNWMZM\\N]Q][
 12345 11I\\MMM[ RMQPNRMUMWNXQX[
 12345 18I\\QMONMPLSLUMXOZQ[T[VZXXYUYSXPVNTMQM
@@ -2314,8 +2314,9 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 
 		let hLeft = this.hershey2coord(h.charAt(startCol + 3))
 		let hRight = this.hershey2coord(h.charAt(startCol + 4))
-		let hWidth = (hRight - hLeft) * this.hfactor
 		let hVertices = h.substring(startCol + 5).replace(/ R/g, " ").split(" ")
+		
+		this.p.translate(-hLeft * this.hfactor, 0)
 
 		for(let vert of hVertices) {
 			this.beginShape()
@@ -2329,7 +2330,7 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 			}
 			this.endShape()
 		}
-		this.p.translate(hWidth + 5 * this.hfactor, 0)
+		this.p.translate((hRight + 5) * this.hfactor, 0)
 	}
 
 	hershey2coord(c) {

@@ -2142,7 +2142,7 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		s = s.replaceAll('\t', '    ')
 		let parts = s.split(/\r\n|\r|\n/)
 
-		let lineHeight = this.hfactor * this.hheight 
+		let lineHeight = this.hfactor * this.hheight * 2
 		let totalHeight = (lineHeight * parts.length) + (this.hleading * (parts.length - 1))
 		switch (this.textAlignY) {
  			case this.p.CENTER:
@@ -2223,7 +2223,7 @@ registerProcessor('xyscope-processor-${this.id}', class VectorProcessor extends 
 		if(!this.fontReady) return []
 		let parts = s.split(/\r\n|\r|\n/)
 
-		let lineHeight = this.hfactor * this.hheight
+		let lineHeight = this.hfactor * this.hheight * 2
 		let totalHeight = (lineHeight * parts.length) + (this.hleading * (parts.length - 1))
 
 		switch (this.textAlignY) {
